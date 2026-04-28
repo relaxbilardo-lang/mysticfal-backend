@@ -1,0 +1,36 @@
+const express = require("express");
+const router = express.Router();
+const multer = require("multer");
+const path = require("path");
+
+const User = require("../models/User");
+
+// 📸 STORAGE
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
+// 🔥 AVATAR UPLOAD
+router.post("/upload-avatar", upload.single("image"), async (req, res) => {
+  try {
+    const userId = req.body.userId;
+
+    const imageUrl = `http://10.0.2.2:4000/uploads/${req.file.filename}`;
+
+    await User.findByIdAndUpdate(userId, {
+      profileImage: imageUrl,
+    });
+
+    res.json({ success: true, imageUrl });
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false });
+  }
+});
+
+module.exports = router;

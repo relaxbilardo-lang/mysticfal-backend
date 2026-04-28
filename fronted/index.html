@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>MysticFal ☕</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f0f1a;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .login { background: #4caf50; }
+    .fal { background: #9c27b0; }
+    .box {
+      margin-top: 30px;
+      padding: 20px;
+      background: #1e1e2f;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔮 MysticFal</h1>
+
+  <h3>Coin: <span id="coin">0</span></h3>
+
+  <button class="login" onclick="login()">🎁 Günlük Coin Al</button>
+  <button class="fal" onclick="getFal()">☕ Fal Baktır (2 Coin)</button>
+
+  <div class="box">
+    <p id="result">Falın burada görünecek...</p>
+  </div>
+
+<script>
+const API = "http://localhost:4000"
+const userId = "1"
+
+async function login() {
+  const res = await fetch(API + "/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId })
+  })
+
+  const data = await res.json()
+  document.getElementById("coin").innerText = data.coins
+  document.getElementById("result").innerText = data.message
+}
+
+async function getFal() {
+  document.getElementById("result").innerText = "🔮 Fal bakılıyor..."
+
+  const res = await fetch(API + "/api/coffee", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId })
+  })
+
+  const data = await res.json()
+
+  if (!data.success) {
+    document.getElementById("result").innerText = data.error
+    return
+  }
+
+  document.getElementById("coin").innerText = data.coins
+  document.getElementById("result").innerText = data.fortune
+}
+</script>
+
+</body>
+</html>
