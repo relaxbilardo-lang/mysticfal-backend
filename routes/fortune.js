@@ -6,7 +6,7 @@ const axios = require("axios")
 
 
 const generateAIReading = require("../services/ai");
-const Fortune = require("../models/Fortune") 
+//const Fortune = require("../models/Fortune") 
 
 const VALID_TYPES = ["coffee", "tarot", "dream", "horoscope" , "star"];
 
