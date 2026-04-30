@@ -4,6 +4,8 @@ const cors = require("cors");
 const multer = require("multer");
 const OpenAI = require("openai");
 
+console.log("ENV CHECK:", process.env.OPENAI_API_KEY ? "VAR" : "YOK");
+
 // 🔥 OPENAI INIT (KRİTİK)
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
