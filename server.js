@@ -3,9 +3,15 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const OpenAI = require("openai");
+
+// 🔥 OPENAI INIT (KRİTİK)
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 const mongoose = require("mongoose");
 const uploadRoute = require("./routes/upload");
-const authRoutes = require("./routes/auth")
+const authRoutes = require("./routes/auth");
 
 // ✅ DB & MODELS
 const connectDB = require("./config/db");
@@ -260,20 +266,44 @@ app.post("/api/daily-reward", async (req, res) => {
   }
 });
 
-
-
 app.post("/api/love", async (req, res) => {
   const { name1, name2 } = req.body;
-  const combined = (name1 + name2).toLowerCase().split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+
+  const combined = (name1 + name2)
+    .toLowerCase()
+    .split("")
+    .reduce((a, b) => a + b.charCodeAt(0), 0);
+
   let score = (combined % 61) + 40;
+
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: `${name1} ve ${name2} aşk uyumu %${score}. Türkçe yorumla.` }],
+      messages: [
+        {
+          role: "user",
+          content: `${name1} ve ${name2} aşk uyumu %${score}. Türkçe ve kısa yorum yap.`,
+        },
+      ],
     });
-    res.json({ success: true, score, comment: completion.choices[0].message.content });
-  } catch (err) { res.json({ score, comment: "Enerji yüksek!" }); }
-});
+
+    return res.json({
+      success: true,
+      score,
+      comment: completion.choices[0].message.content,
+    });
+
+  } catch (err) {
+    console.error("OPENAI HATA:", err);
+
+    return res.json({
+      success: true,
+      score,
+      comment: "Enerji güzel görünüyor ✨",
+    });
+  }
+}); // 🔥 route burada düzgün kapanıyor
+
 
 // ✅ ROUTE KULLANIMLARI & ERROR HANDLING
 app.use("/api/fortune", fortuneRoutes);
@@ -282,14 +312,20 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/daily", dailyRoutes);
 app.use("/api/coin", coinRoutes);
 app.use("/api/upload", uploadRoute);
-app.use("/api/auth", authRoutes)
+app.use("/api/auth", authRoutes);
 app.use("/api/user", require("./routes/user"));
 
-app.use((req, res) => res.status(404).json({ error: "Yol bulunamadı" }));
-app.use((err, req, res, next) => { res.status(500).json({ error: "Sunucu hatası" }); });
+app.use((req, res) =>
+  res.status(404).json({ error: "Yol bulunamadı" })
+);
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Sunucu hatası" });
+});
 
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, "0.0.0.0", () => {
-console.log(`🚀 Server port: ${PORT}`);
+  console.log(`🚀 Server port: ${PORT}`);
 });

@@ -1,16 +1,10 @@
 const OpenAI = require("openai");
-const path = require("path");
-
-require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-console.log("🔑 API KEY:", process.env.OPENAI_API_KEY);
-
 const generateAIReading = async (type, data = "") => {
-
   const styles = [
     "duygusal",
     "tutkulu",
@@ -18,6 +12,7 @@ const generateAIReading = async (type, data = "") => {
     "gizemli",
     "romantik ama gerçekçi",
   ];
+
   const randomStyle = styles[Math.floor(Math.random() * styles.length)];
 
   const prompts = {
@@ -46,7 +41,6 @@ ${data}
     horoscope: `${data} burcu için günlük yorum yap. SADECE JSON formatında cevap ver:
 {"general": "...", "love": "...", "career": "...", "money": "..."}`,
 
-    // 🔥 FIXED STAR (TEMİZ)
     star: `
 Sen profesyonel bir astrologsun.
 
@@ -68,8 +62,6 @@ Detaylı analiz yap.
 
   const currentPrompt = prompts[type] || "Türkçe mistik bir fal yorumu yap.";
 
-  console.log("🧠 PROMPT:", currentPrompt);
-
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -82,8 +74,6 @@ Detaylı analiz yap.
     });
 
     const result = completion.choices[0].message.content;
-
-    console.log("🧠 RESULT:", result);
 
     if (type === "horoscope") {
       try {
