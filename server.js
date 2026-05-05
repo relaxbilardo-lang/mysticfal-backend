@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const OpenAI = require("openai");
+const jwt = require("jsonwebtoken"); // 💣 EKLE
 
 console.log("MONGO_URI:", process.env.MONGO_URI);
 

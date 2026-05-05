@@ -8,7 +8,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-console.log("🔑 API KEY:", process.env.OPENAI_API_KEY);
 
 const generateAIReading = async (type, data = "") => {
 
