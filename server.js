@@ -4,6 +4,7 @@ const cors = require("cors");
 const multer = require("multer");
 const OpenAI = require("openai");
 
+console.log("MONGO_URI:", process.env.MONGO_URI);
 console.log("ENV CHECK:", process.env.OPENAI_API_KEY ? "VAR" : "YOK");
 
 // 🔥 OPENAI INIT (KRİTİK)
@@ -80,7 +81,8 @@ function getZodiacSign(day, month) {
             
              // 🆕 YENİ KULLANICI
       if (!user) {
-  user = await User.create({
+      console.log("🔥 USER YOK → CREATE EDİLİYOR");
+        user = await User.create({
     email,
     password, // 🔥 şimdilik plain (ileride bcrypt)
     userId: email,
@@ -96,7 +98,7 @@ function getZodiacSign(day, month) {
   return res.json({
     success: true,
     isNewUser: true,
-    userId: user._id.toString()
+    userId: user.userId
   });
 }
 
@@ -112,7 +114,7 @@ function getZodiacSign(day, month) {
     res.json({
       success: true,
       isNewUser: !user.isProfileCompleted,
-      userId: user._id.toString()
+       userId: user.userId
     });
 
   } catch (err) {
@@ -135,51 +137,69 @@ function getZodiacSign(day, month) {
         });
       });
 
-// 📱 [YENİ] OTP DOĞRULAMA & GİRİŞ MANTIĞI
-  // server.js içindeki verify-otp endpoint'ini bu şekilde revize et
-app.post("/api/auth/verify-otp", async (req, res) => {
+      app.post("/api/auth/verify-otp", async (req, res) => {
   try {
     const { phoneNumber, otpCode } = req.body;
+
     console.log("Giriş denemesi:", phoneNumber, "Kod:", otpCode);
 
-    // 1. Kod kontrolü
-    if (String(otpCode) !== "1234") {
-      return res.status(400).json({ success: false, error: "Geçersiz kod" });
-    }
+    // 1️⃣ OTP kontrol
+const cleanCode = String(otpCode).trim();
 
-    // 2. Veritabanı işlemi
+console.log("🔥 RAW OTP:", otpCode);
+console.log("🔥 CLEAN OTP:", cleanCode);
+
+if (cleanCode !== "1234") {
+  return res.status(400).json({
+    success: false,
+    error: "Geçersiz kod",
+  });
+}
+    // 2️⃣ USER BUL
     let user = await User.findOne({ phoneNumber });
 
+    // 3️⃣ YOKSA OLUŞTUR
     if (!user) {
-      // ✨ Yeni kullanıcı oluştururken gerekli tüm alanları dolduralım
-      user = await User.create({ 
-        phoneNumber: phoneNumber,
-        userId: phoneNumber, // userId boş kalmasın diye numarayı atıyoruz
+      console.log("🔥 USER YOK → OLUŞTURULUYOR");
+
+      user = await User.create({
+        phoneNumber,
+        coins: 10,
         isProfileCompleted: false,
-        coins: 10
-      });
-      
-      return res.json({
-        success: true,
-        isNewUser: true,
-        userId: user._id.toString() // MongoDB'nin kendi ID'sini gönderiyoruz
       });
     }
 
-    // ✅ Mevcut kullanıcı
+      console.log("🔥 CREATED USER:", user);
+
+      console.log("🔥 OTP DB:", mongoose.connection.name);
+      console.log("🔥 CREATED USER ID:", user._id.toString());
+    // 4️⃣ TOKEN
+    const token = jwt.sign(
+      { id: user._id },
+      "SECRET_KEY",
+      { expiresIn: "7d" }
+    );
+
+    // 5️⃣ RESPONSE 💣 EN KRİTİK KISIM
     res.json({
       success: true,
+      token,
+      user: {
+        _id: user._id.toString(), // 🔥 TEK DOĞRU ID
+        phoneNumber: user.phoneNumber,
+        coins: user.coins,
+      },
       isNewUser: !user.isProfileCompleted,
-      userId: user._id.toString()
     });
 
   } catch (err) {
-    // 🔥 Hatayı terminalde görmek için bu log çok önemli!
-    console.error("VERIFY-OTP HATASI:", err); 
-    res.status(500).json({ success: false, error: "Sunucu hatası" });
+    console.error("VERIFY-OTP HATASI:", err);
+    res.status(500).json({
+      success: false,
+      error: "Sunucu hatası",
+    });
   }
 });
-
 
 // 📝 [YENİ] PROFİL GÜNCELLEME
 app.post("/api/auth/update-profile", async (req, res) => {

@@ -3,68 +3,75 @@ const router = express.Router()
 
 const User = require("../models/User")
 const axios = require("axios")
+const Fortune = require("../models/Fortune");
 
 
-const generateAIReading = require("../services/ai");
-//const Fortune = require("../models/Fortune") 
+ const generateAIReading = require("../services/ai");
 
-const VALID_TYPES = ["coffee", "tarot", "dream", "horoscope" , "star"];
+ const VALID_TYPES = ["coffee", "tarot", "dream", "horoscope", "star"];
 
-router.post("/", async (req, res) => {
+  router.post("/", async (req, res) => {
+  
+  console.log("🔥 FORTUNE DB:", mongoose.connection.name);
+  console.log("🔥 SEARCH USER ID:", req.body.userId);  
+  console.log("🔥 NEW VERSION RUNNING");
+  console.log("🔥 DB NAME:", mongoose.connection.name);
+  console.log("🔥 SEARCH USER ID:", req.body.userId);
   console.log("FULL BODY:", req.body);
+
   try {
-    const { type, userId, text, sign, birthDate } = req.body
-    console.log("TYPE:", type);
-    if (!type || !userId) {
-      return res.status(400).json({ error: "Eksik veri" })
-    }
+    const { type, userId, text, sign, birthDate } = req.body;
 
-    if (!VALID_TYPES.includes(type)) {
-      return res.status(400).json({ error: "Geçersiz fal tipi" })
-    }
-    
-        
-          
- // 🔥 KULLANICI KONTROLÜ VE FIX
-let user;
+console.log("TYPE:", type);
 
-try {
-  user = await User.findOne({ userId: userId });
-
-  if (!user) {
-    return res.status(404).json({ error: "User bulunamadı" });
-  }
-
-  // 🔥 TEST İÇİN COIN FULL
-  user.coins = 9999;
-  await user.save();
-
-} catch (err) {
-  console.error("DB Hatası:", err.message);
-  return res.status(500).json({ error: "DB hatası" });
+// VALIDATION
+if (!type || !userId) {
+  return res.status(400).json({ error: "Eksik veri" });
 }
 
-const now = new Date();
+if (!VALID_TYPES.includes(type)) {
+  return res.status(400).json({ error: "Geçersiz fal tipi" });
+}
+
+// OBJECTID CHECK
+if (!mongoose.Types.ObjectId.isValid(userId)) {
+  console.log("❌ INVALID OBJECTID:", userId);
+  return res.status(400).json({ error: "Geçersiz userId" });
+}
+
+// USER BUL
+const user = await User.findById(userId);
+
+console.log("🔥 FOUND USER:", user);
+
+if (!user) {
+  console.log("❌ USER DB'DE YOK:", userId);
+  return res.status(404).json({ error: "User bulunamadı" });
+}
+
+// =======================
+// 🔥 BURADAN SONRASI ARTIK ROUTE İÇİNDE
+// =======================
 
 // VIP kontrolü
+const now = new Date();
 const isVIP = user.vipExpiry
   ? (user.isVIP && user.vipExpiry > now)
   : false;
 
-    // 🔁 günlük reset
-    if (user.lastUsageReset) {
-      const last = new Date(user.lastUsageReset)
-      const diff = now - last
-      const hours = diff / (1000 * 60 * 60)
+// günlük reset
+if (user.lastUsageReset) {
+  const last = new Date(user.lastUsageReset);
+  const diff = now - last;
+  const hours = diff / (1000 * 60 * 60);
 
-      if (hours >= 24) {
-        user.dailyUsage = 0
-        user.lastUsageReset = now
-      }
-    } else {
-      user.lastUsageReset = now
-    }
-
+  if (hours >= 24) {
+    user.dailyUsage = 0;
+    user.lastUsageReset = now;
+  }
+} else {
+  user.lastUsageReset = now;
+}
    // 💸 PAYWALL
 user.dailyUsage += 1;
 
@@ -188,37 +195,48 @@ if (type === "horoscope") {
   finalFortune = fortune;
 }
 
-// 🔥 SAVE (USER + FORTUNE) - 3 ADET SINIRLAMA DAHİL
+// 🔥 SAVE (USER + FORTUNE)
 try {
   await user.save();
 
   // 1. Yeni falı veritabanına ekle
-  await Fortune.create({
-    userId: userId,
-    type: type,
-    result: typeof finalFortune === "string"
-      ? finalFortune
-      : JSON.stringify(finalFortune),
-    question: text || sign || birthDate || "",
-    createdAt: new Date()
-  });
+  try {
+    await Fortune.create({
+      userId: userId,
+      type: type,
+      result:
+        typeof finalFortune === "string"
+          ? finalFortune
+          : JSON.stringify(finalFortune),
+      question: text || sign || birthDate || "",
+      createdAt: new Date(),
+    });
 
-  // 2. SINIRLAMA MANTIĞI: Kullanıcının tüm fallarını tarihe göre çek (en yeni üstte)
-  const allFortunes = await Fortune.find({ userId }).sort({ createdAt: -1 });
+    console.log("✅ FORTUNE SAVED");
 
-  // 3. Eğer 3'ten fazla fal varsa, 3. indisten sonrakileri sil
-  if (allFortunes.length > 5) {
-    const idsToDelete = allFortunes.slice(5).map(f => f._id);
-    await Fortune.deleteMany({ _id: { $in: idsToDelete } });
-    console.log(`✅ Eski fallar silindi. Silinen adet: ${idsToDelete.length}`);
+  } catch (e) {
+    console.log("❌ FORTUNE SAVE ERROR:", e.message);
   }
 
-  console.log("✅ FORTUNE SAVED & LIMITED TO 5");
+  // 2. SINIRLAMA MANTIĞI
+  try {
+    const allFortunes = await Fortune.find({ userId }).sort({ createdAt: -1 });
+
+    if (allFortunes.length > 5) {
+      const idsToDelete = allFortunes.slice(5).map(f => f._id);
+      await Fortune.deleteMany({ _id: { $in: idsToDelete } });
+
+      console.log(`🧹 Eski fallar silindi: ${idsToDelete.length}`);
+    }
+  } catch (e) {
+    console.log("❌ CLEANUP ERROR:", e.message);
+  }
+
+  console.log("✅ SAVE BLOCK OK");
 
 } catch (saveErr) {
-  console.error("Kayıt hatası:", saveErr.message);
+  console.error("❌ USER SAVE ERROR:", saveErr.message);
 }
-
   const requestId = Date.now();
 
 res.json({

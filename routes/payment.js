@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { verifyPayment } = require("../services/google");
+//const { verifyPayment } = require("../services/google");
 const User = require("../models/User");
 
 // 👑 GOOGLE PLAY ÖDEME VERIFY

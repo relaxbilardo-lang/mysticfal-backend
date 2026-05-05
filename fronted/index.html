@@ -35,36 +35,52 @@
 
   <h3>Coin: <span id="coin">0</span></h3>
 
-  <button class="login" onclick="login()">🎁 Günlük Coin Al</button>
-  <button class="fal" onclick="getFal()">☕ Fal Baktır (2 Coin)</button>
+  <button class="login" onclick="login()">🎁 Login</button>
+  <button class="fal" onclick="getFal()">☕ Fal Baktır</button>
 
   <div class="box">
     <p id="result">Falın burada görünecek...</p>
   </div>
 
 <script>
-const API = "http://localhost:4000"
-const userId = "1"
+const API = "https://mysticfal-backend-production.up.railway.app"
+
+// 🔥 login sonrası dolacak
+let userId = null
 
 async function login() {
-  const res = await fetch(API + "/api/login", {
+  const res = await fetch(API + "/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId })
+    body: JSON.stringify({
+      email: "test@test.com",
+      password: "123456"
+    })
   })
 
   const data = await res.json()
-  document.getElementById("coin").innerText = data.coins
-  document.getElementById("result").innerText = data.message
+
+  // 🔥 BURASI KRİTİK
+  userId = data.user._id
+
+  document.getElementById("result").innerText = "Giriş başarılı"
 }
 
 async function getFal() {
+  if (!userId) {
+    document.getElementById("result").innerText = "Önce login ol"
+    return
+  }
+
   document.getElementById("result").innerText = "🔮 Fal bakılıyor..."
 
-  const res = await fetch(API + "/api/coffee", {
+  const res = await fetch(API + "/api/fortune", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId })
+    body: JSON.stringify({
+      type: "coffee",
+      userId: userId
+    })
   })
 
   const data = await res.json()
