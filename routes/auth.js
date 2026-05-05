@@ -4,6 +4,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const mongoose = require("mongoose");
 
 const User = require("../models/User");
 
@@ -209,7 +210,7 @@ router.post("/verify-otp", async (req, res) => {
 
       user = await User.create({
         phoneNumber,
-        userId: new require("mongoose").Types.ObjectId().toString(),
+       userId: new mongoose.Types.ObjectId().toString(),
         coins: 10,
         isProfileCompleted: false,
       });
