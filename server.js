@@ -138,55 +138,48 @@ function getZodiacSign(day, month) {
         });
       });
 
-      app.post("/api/auth/verify-otp", async (req, res) => {
+    app.post("/api/auth/verify-otp", async (req, res) => {
   try {
     const { phoneNumber, otpCode } = req.body;
 
-    console.log("Giriş denemesi:", phoneNumber, "Kod:", otpCode);
+    const cleanCode = String(otpCode).trim();
 
-    // 1️⃣ OTP kontrol
-const cleanCode = String(otpCode).trim();
-
-console.log("🔥 RAW OTP:", otpCode);
-console.log("🔥 CLEAN OTP:", cleanCode);
-
-if (cleanCode !== "1234") {
-  return res.status(400).json({
-    success: false,
-    error: "Geçersiz kod",
-  });
-}
-    // 2️⃣ USER BUL
-    let user = await User.findOne({ phoneNumber });
-
-    // 3️⃣ YOKSA OLUŞTUR
-    if (!user) {
-      console.log("🔥 USER YOK → OLUŞTURULUYOR");
-
-      user = await User.create({
-        phoneNumber,
-        coins: 10,
-        isProfileCompleted: false,
+    if (cleanCode !== "1234") {
+      return res.status(400).json({
+        success: false,
+        error: "Geçersiz kod",
       });
     }
 
-      console.log("🔥 CREATED USER:", user);
+    // 🔥 ÖNCE BUL
+    let user = await User.findOne({ phoneNumber });
+console.log("🔥 OTP STEP 1 - FIND USER:", user);
 
-      console.log("🔥 OTP DB:", mongoose.connection.name);
-      console.log("🔥 CREATED USER ID:", user._id.toString());
-    // 4️⃣ TOKEN
-    const token = jwt.sign(
-      { id: user._id },
-      "SECRET_KEY",
-      { expiresIn: "7d" }
-    );
+if (!user) {
+  console.log("🔥 OTP STEP 2 - CREATING USER");
 
-    // 5️⃣ RESPONSE 💣 EN KRİTİK KISIM
-    res.json({
+  user = await User.create({
+    phoneNumber,
+    userId: new mongoose.Types.ObjectId().toString(),
+    coins: 10,
+    isProfileCompleted: false,
+  });
+
+  console.log("🔥 OTP STEP 3 - USER CREATED:", user);
+}
+
+console.log("🔥 OTP STEP 4 - SIGNING TOKEN");
+
+const token = jwt.sign(
+  { id: user._id },
+  "SECRET_KEY",
+  { expiresIn: "7d" }
+);
+    return res.json({
       success: true,
       token,
       user: {
-        _id: user._id.toString(), // 🔥 TEK DOĞRU ID
+        _id: user._id.toString(),
         phoneNumber: user.phoneNumber,
         coins: user.coins,
       },
@@ -194,10 +187,10 @@ if (cleanCode !== "1234") {
     });
 
   } catch (err) {
-    console.error("VERIFY-OTP HATASI:", err);
-    res.status(500).json({
+    console.error("🔥 OTP ERROR:", err);
+    return res.status(500).json({
       success: false,
-      error: "Sunucu hatası",
+      error: err.message, // 💣 GERÇEK HATA GÖR
     });
   }
 });
