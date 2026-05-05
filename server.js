@@ -322,13 +322,13 @@ app.post("/api/love", async (req, res) => {
 
 
 // ✅ ROUTE KULLANIMLARI & ERROR HANDLING
+app.use("/api/auth", authRoutes);
 app.use("/api/fortune", fortuneRoutes);
 app.use("/api/vip", vipRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/daily", dailyRoutes);
 app.use("/api/coin", coinRoutes);
 app.use("/api/upload", uploadRoute);
-app.use("/api/auth", authRoutes);
 app.use("/api/user", require("./routes/user"));
 
 app.use((req, res) =>

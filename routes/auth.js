@@ -186,5 +186,61 @@ router.post("/reset/:token", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ================= OTP LOGIN =================
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const { phoneNumber, otpCode } = req.body;
+
+    console.log("📩 OTP BODY:", req.body);
+
+    const cleanCode = String(otpCode).trim();
+
+    if (cleanCode !== "1234") {
+      return res.status(400).json({
+        success: false,
+        error: "Geçersiz kod",
+      });
+    }
+
+    let user = await User.findOne({ phoneNumber });
+
+    if (!user) {
+      console.log("🔥 USER YOK → OLUŞTURULUYOR");
+
+      user = await User.create({
+        phoneNumber,
+        userId: new require("mongoose").Types.ObjectId().toString(),
+        coins: 10,
+        isProfileCompleted: false,
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      "SECRET_KEY",
+      { expiresIn: "7d" }
+    );
+
+    return res.json({
+      success: true,
+      token,
+      user: {
+        _id: user._id.toString(),
+        phoneNumber: user.phoneNumber,
+        coins: user.coins,
+      },
+      isNewUser: !user.isProfileCompleted,
+    });
+
+  } catch (err) {
+    console.error("🔥 OTP ERROR FULL:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+
 
 module.exports = router;
