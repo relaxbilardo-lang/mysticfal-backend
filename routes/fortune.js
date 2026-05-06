@@ -1,9 +1,11 @@
 const express = require("express")
+const mongoose = require("mongoose");
 const router = express.Router()
 
 const User = require("../models/User")
 const axios = require("axios")
 const Fortune = require("../models/Fortune");
+
 
 
  const generateAIReading = require("../services/ai");
