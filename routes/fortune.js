@@ -95,11 +95,22 @@ if (type === "horoscope") cost = 2;
 
 // 🔥 TEST MODE - COIN SİSTEMİ TAM KAPALI
 console.log("💰 COIN BEFORE:", user.coins);
+// 💰 COIN CHECK
+if (!isVIP && user.coins < cost) {
+  return res.json({
+    success: false,
+    error: "NOT_ENOUGH_COINS",
+    coins: user.coins,
+  });
+}
 
-// coin'i hep full tut
-user.coins = 9999;
+// 💸 COIN DÜŞ
+if (!isVIP) {
+  user.coins -= cost;
+}
 
 console.log("💰 COIN AFTER:", user.coins);
+
 
 // 🔥 DEVAM NORMAL AKIŞ
 let data = text || "";
