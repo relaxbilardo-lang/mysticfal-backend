@@ -14,7 +14,8 @@ router.post("/daily-reward", async (req, res) => {
     }
 
     // 🔥 SADECE BU (KRİTİK)
-    let user = await User.findOne({ userId });
+    let user = await User.findById(userId);
+    console.log("🔥 DAILY USER:", user);
 
     if (!user) {
       return res.json({ success: false, error: "User yok" });
