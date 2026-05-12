@@ -66,7 +66,7 @@ router.post("/register", async (req, res) => {
 
     // 🔥 MAIL GÖNDER
     const mailResult = await resend.emails.send({
-      from: "MysticFal <onboarding@resend.dev>",
+    from: "MysticFal <onboarding@mysticfal.com.tr>",
       to: email,
       subject: "MysticFal Hesap Doğrulama ✨",
       html: `
@@ -148,7 +148,7 @@ router.post("/forgot-password", async (req, res) => {
 
     if (resend) {
       await resend.emails.send({
-        from: "MysticFal <no-reply@mysticfal.com.tr>",
+       from: "MysticFal <onboarding@mysticfal.com.tr>",
         to: email,
         subject: "Şifre Sıfırlama",
         html: `
