@@ -24,7 +24,7 @@ if (process.env.RESEND_API_KEY) {
 router.post("/register", async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log("REGISTER EMAIL:", email);
     if (!email || !password) {
       return res.status(400).json({
         message: "Eksik alan",
@@ -32,7 +32,7 @@ router.post("/register", async (req, res) => {
     }
 
     const existing = await User.findOne({ email });
-
+    console.log("EXISTING USER:", existing);
     if (existing) {
       return res.status(400).json({
         message: "Kullanıcı zaten var",
