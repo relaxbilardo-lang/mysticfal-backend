@@ -99,6 +99,31 @@ router.post("/register", async (req, res) => {
     });
   }
 });
+  // ================= VERIFY =================
+    router.get("/verify/:token", async (req, res) => {
+    try {
+
+    const user = await User.findOne({
+      verificationToken: req.params.token,
+    });
+
+    if (!user) {
+      return res.send("Geçersiz link ❌");
+    }
+
+    user.isVerified = true;
+    user.verificationToken = null;
+
+    await user.save();
+
+    res.send("Hesabın doğrulandı ✅");
+
+  } catch (err) {
+    console.log("VERIFY ERROR:", err);
+    res.send("Hata oluştu ❌");
+  }
+});
+
 // ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
