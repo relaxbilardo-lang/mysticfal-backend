@@ -19,22 +19,31 @@ if (process.env.RESEND_API_KEY) {
   console.log("⚠️ Resend API KEY yok - mail gönderimi kapalı");
 }
 
+
 // ================= REGISTER =================
 router.post("/register", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Eksik alan" });
+      return res.status(400).json({
+        message: "Eksik alan",
+      });
     }
 
     const existing = await User.findOne({ email });
+
     if (existing) {
-      return res.status(400).json({ message: "Kullanıcı zaten var" });
+      return res.status(400).json({
+        message: "Kullanıcı zaten var",
+      });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const token = crypto.randomBytes(32).toString("hex");
+
+    const token = crypto
+      .randomBytes(32)
+      .toString("hex");
 
     await User.create({
       userId: crypto.randomBytes(8).toString("hex"),
@@ -44,55 +53,52 @@ router.post("/register", async (req, res) => {
       isVerified: false,
     });
 
-    const link = `myapp://reset?token=${token}`;
+    // 🔥 GERÇEK VERIFY LINK
+    const link =
+      `https://mysticfal-backend-production.up.railway.app/api/auth/verify/${token}`;
 
-    // 🔥 RESPONSE
-    res.json({ message: "Mail gönderildi" });
-
-    // 🔥 MAIL (VARSA GÖNDER)
-    if (resend) {
-      resend.emails.send({
-        from: "MysticFal <no-reply@mysticfal.com.tr>",
-        to: email,
-        subject: "Hesabını Doğrula ✨",
-        html: `
-          <h2>Hesabını doğrula</h2>
-          <p>Devam etmek için aşağıya tıkla:</p>
-          <a href="${link}">Hesabı Doğrula</a>
-        `,
-      })
-      .then((data) => console.log("📩 MAIL OK:", data))
-      .catch((err) => console.log("❌ MAIL ERROR:", err));
+    // 🔥 RESEND YOKSA
+    if (!resend) {
+      return res.status(500).json({
+        message: "Mail sistemi aktif değil",
+      });
     }
+
+    // 🔥 MAIL GÖNDER
+    const mailResult = await resend.emails.send({
+      from: "MysticFal <onboarding@resend.dev>",
+      to: email,
+      subject: "MysticFal Hesap Doğrulama ✨",
+      html: `
+        <h2>Hesabını doğrula</h2>
+
+        <p>
+          MysticFal hesabını aktifleştirmek için
+          aşağıdaki butona tıkla.
+        </p>
+
+        <a href="${link}">
+          Hesabı Doğrula
+        </a>
+      `,
+    });
+
+    console.log("📩 MAIL RESULT:", mailResult);
+
+    return res.json({
+      success: true,
+      message: "Doğrulama maili gönderildi",
+    });
 
   } catch (err) {
     console.log("❌ REGISTER ERROR:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
-// ================= VERIFY =================
-router.get("/verify/:token", async (req, res) => {
-  try {
-    const user = await User.findOne({
-      verificationToken: req.params.token,
+    return res.status(500).json({
+      success: false,
+      error: err.message,
     });
-
-    if (!user) {
-      return res.send("Geçersiz link ❌");
-    }
-
-    user.isVerified = true;
-    user.verificationToken = null;
-    await user.save();
-
-    res.send("Hesabın doğrulandı ✅");
-
-  } catch (err) {
-    res.send("Hata oluştu ❌");
   }
 });
-
 // ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
