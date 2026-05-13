@@ -273,6 +273,53 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
+// ================= UPDATE PROFILE =================
+router.post("/update-profile", async (req, res) => {
+  try {
+
+    const {
+      userId,
+      name,
+      surname,
+      birthDate,
+      birthTime,
+    } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Kullanıcı bulunamadı",
+      });
+    }
+
+    user.name = name;
+    user.surname = surname;
+    user.birthDate = birthDate;
+    user.birthTime = birthTime;
+    user.isProfileCompleted = true;
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      user,
+    });
+
+  } catch (err) {
+
+    console.log(
+      "UPDATE PROFILE ERROR:",
+      err,
+    );
+
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
 
 
 module.exports = router;
