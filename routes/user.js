@@ -57,6 +57,7 @@ router.post("/profile", async (req, res) => {
         birthTime: user.birthTime || "",
         zodiac: user.zodiac || "",
         profileImage: user.profileImage || "",
+        coins: user.coins || 0,
       },
     });
 
