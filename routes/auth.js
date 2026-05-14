@@ -283,6 +283,7 @@ router.post("/update-profile", async (req, res) => {
       surname,
       birthDate,
       birthTime,
+      zodiac,
     } = req.body;
 
     const user = await User.findById(userId);
@@ -298,6 +299,7 @@ router.post("/update-profile", async (req, res) => {
     user.surname = surname;
     user.birthDate = birthDate;
     user.birthTime = birthTime;
+    user.zodiac = zodiac;
     user.isProfileCompleted = true;
 
     await user.save();
