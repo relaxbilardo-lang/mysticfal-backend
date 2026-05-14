@@ -116,7 +116,41 @@ router.post("/register", async (req, res) => {
 
     await user.save();
 
-    res.send("Hesabın doğrulandı ✅");
+   res.send(`
+  <html>
+    <body style="
+      background:#0F0F1E;
+      color:white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      font-family:sans-serif;
+      flex-direction:column;
+    ">
+
+      <h1>✨ Hesabın Doğrulandı</h1>
+
+      <p>
+        Artık MysticFal'a dönebilirsin
+      </p>
+
+      <a href="mysticfal://home"
+        style="
+          margin-top:20px;
+          background:#FFC107;
+          color:black;
+          padding:14px 24px;
+          border-radius:12px;
+          text-decoration:none;
+          font-weight:bold;
+        ">
+        MysticFal'a Dön
+      </a>
+
+    </body>
+  </html>
+`);
 
   } catch (err) {
     console.log("VERIFY ERROR:", err);
