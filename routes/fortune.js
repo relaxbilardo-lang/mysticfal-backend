@@ -80,7 +80,7 @@ user.dailyUsage += 1;
 // 🔥 BURAYA KOY
  
 
-console.log("💰 COIN BEFORE:", user.coins);
+console.log("💰 COIN BEFORE:", user.coin);
 // 💰 COIN COST SYSTEM
 let cost = 0;
 
@@ -94,22 +94,22 @@ if (type === "horoscope") cost = 2;
 
 
 // 🔥 TEST MODE - COIN SİSTEMİ TAM KAPALI
-console.log("💰 COIN BEFORE:", user.coins);
+console.log("💰 COIN BEFORE:", user.coin);
 // 💰 COIN CHECK
-if (!isVIP && user.coins < cost) {
+if (!isVIP && user.coin < cost) {
   return res.json({
     success: false,
     error: "NOT_ENOUGH_COINS",
-    coins: user.coins,
+    coins: user.coin,
   });
 }
 
 // 💸 COIN DÜŞ
 if (!isVIP) {
-  user.coins -= cost;
+  user.coin -= cost;
 }
 
-console.log("💰 COIN AFTER:", user.coins);
+console.log("💰 COIN AFTER:", user.coin);
 
 
 // 🔥 DEVAM NORMAL AKIŞ
@@ -268,7 +268,7 @@ res.json({
   debug: "BURAYA GELDI",
 
   // 🔥 DİĞERLERİ
-  coins: user.coins,
+  coins: user.coin,
   isVIP: isVIP,
   usage: user.dailyUsage,
   paywall: false,

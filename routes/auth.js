@@ -293,7 +293,7 @@ router.post("/verify-otp", async (req, res) => {
       user: {
         _id: user._id.toString(),
         phoneNumber: user.phoneNumber,
-        coins: user.coins,
+        coins: user.coin,
       },
       isNewUser: !user.isProfileCompleted,
     });

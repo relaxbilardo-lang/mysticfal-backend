@@ -181,7 +181,7 @@ const token = jwt.sign(
       user: {
         _id: user._id.toString(),
         phoneNumber: user.phoneNumber,
-        coins: user.coins,
+        coins: user.coin,
       },
       isNewUser: !user.isProfileCompleted,
     });
@@ -234,7 +234,7 @@ app.post("/api/daily-reward", async (req, res) => {
       return res.json({
         success: false,
         message: "Bugün zaten aldın",
-        coins: user.coins,
+        coins: user.coin,
       });
     }
 
@@ -257,7 +257,7 @@ app.post("/api/daily-reward", async (req, res) => {
     const index = Math.min(user.streakCount - 1, 6);
     const reward = rewards[index];
 
-    user.coins += reward;
+    user.coin += reward;
     user.totalEarnedCoins += reward;
 
     user.lastDailyReward = new Date();
@@ -271,7 +271,7 @@ app.post("/api/daily-reward", async (req, res) => {
 
     res.json({
       success: true,
-      coins: user.coins,
+      coins: user.coin,
       reward,
       streak: user.streakCount,
     });

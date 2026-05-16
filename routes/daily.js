@@ -34,7 +34,7 @@ router.post("/daily-reward", async (req, res) => {
         return res.json({
           success: false,
           error: "Bugün zaten aldın ⏳",
-          coins: user.coins,
+          coins: user.coin,
         });
       }
     }
@@ -65,7 +65,7 @@ router.post("/daily-reward", async (req, res) => {
       streak = 0;
     }
 
-    user.coins = (user.coins || 0) + reward;
+    user.coin = (user.coin || 0) + reward;
     user.totalEarnedCoins = (user.totalEarnedCoins || 0) + reward;
 
     user.lastDailyReward = now;
@@ -76,7 +76,7 @@ router.post("/daily-reward", async (req, res) => {
 
     res.json({
       success: true,
-      coins: user.coins,
+      coins: user.coin,
       reward,
       streak,
     });

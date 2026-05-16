@@ -29,7 +29,7 @@ router.post("/google", async (req, res) => {
       // 💰 AYLIK COIN PAKETİ
       if (productId === "coin_monthly") {
         addedCoins = 100;
-        user.coins += addedCoins;
+        user.coin += addedCoins;
       }
 
       // 👑 VIP (İSTERSEN KALSIN)
@@ -46,7 +46,7 @@ router.post("/google", async (req, res) => {
 
       return res.json({
         success: true,
-        coins: user.coins,
+        coins: user.coin,
         addedCoins,
         isVIP: user.isVIP || false,
         vipExpiry: user.vipExpiry || null,

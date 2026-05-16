@@ -15,12 +15,12 @@ router.post("/daily", async (req, res) => {
       return res.json({ success: false, message: "Zaten aldın" })
     }
 
-    user.coins += 5
+    user.coin += 5
     user.lastDailyReward = now
 
     await user.save()
 
-    res.json({ success: true, coins: user.coins })
+    res.json({ success: true, coins: user.coin })
   } catch (err) {
     res.status(500).json({ error: "Hata" })
   }
