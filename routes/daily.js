@@ -65,7 +65,7 @@ router.post("/daily-reward", async (req, res) => {
       streak = 0;
     }
 
-    user.coin = (user.coin || 0) + reward;
+    user.coins = (user.coins|| 0) + reward;
     user.totalEarnedCoins = (user.totalEarnedCoins || 0) + reward;
 
     user.lastDailyReward = now;
