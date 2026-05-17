@@ -51,6 +51,7 @@ router.post("/register", async (req, res) => {
       password: hashed,
       verificationToken: token,
       isVerified: false,
+      coins: 10,
     });
 
     // 🔥 GERÇEK VERIFY LINK
@@ -293,7 +294,7 @@ router.post("/verify-otp", async (req, res) => {
       user: {
         _id: user._id.toString(),
         phoneNumber: user.phoneNumber,
-        coins: user.coin,
+        coins: user.coins,
       },
       isNewUser: !user.isProfileCompleted,
     });
