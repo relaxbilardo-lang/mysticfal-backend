@@ -4,6 +4,7 @@ const multer = require("multer");
 const path = require("path");
 
 const User = require("../models/User");
+const Fortune = require("../models/Fortune");
 
 // 📸 STORAGE
 const storage = multer.diskStorage({
@@ -65,6 +66,49 @@ router.post("/profile", async (req, res) => {
 
     console.log(
       "PROFILE ERROR:",
+      err,
+    );
+
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+// 🗑 DELETE ACCOUNT
+router.post("/delete-account", async (req, res) => {
+  try {
+
+    const { userId } = req.body;
+
+    const user =
+      await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Kullanıcı bulunamadı",
+      });
+    }
+
+   await Fortune.deleteMany({
+   userId,
+   });
+
+    await User.findByIdAndDelete(
+    userId,
+    );
+    return res.json({
+      success: true,
+      message:
+        "Hesap silindi",
+    });
+
+  } catch (err) {
+
+    console.log(
+      "DELETE ERROR:",
       err,
     );
 
