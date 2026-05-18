@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 const User = require("../models/User");
 const Fortune = require("../models/Fortune");
@@ -91,14 +92,43 @@ router.post("/delete-account", async (req, res) => {
           "Kullanıcı bulunamadı",
       });
     }
+       await Fortune.deleteMany({
+  userId,
+});
 
-   await Fortune.deleteMany({
-   userId,
-   });
+if (
+  user.profileImage &&
+  user.profileImage.includes(
+    "/uploads/",
+  )
+) {
 
-    await User.findByIdAndDelete(
-    userId,
+  const fileName =
+    user.profileImage
+      .split("/")
+      .pop();
+
+  const filePath =
+    path.join(
+      __dirname,
+      "../uploads",
+      fileName,
     );
+
+  if (
+    fs.existsSync(
+      filePath,
+    )
+  ) {
+    fs.unlinkSync(
+      filePath,
+    );
+  }
+}
+
+await User.findByIdAndDelete(
+  userId,
+);
     return res.json({
       success: true,
       message:
@@ -117,6 +147,73 @@ router.post("/delete-account", async (req, res) => {
       error: err.message,
     });
   }
+});
+// 💰 ADD COINS
+router.post(
+"/add-coins",
+
+async (
+req,
+res,
+) => {
+
+try {
+
+const {
+userId,
+coins,
+} = req.body;
+
+const user =
+await User.findById(
+userId,
+);
+
+if(!user){
+
+return res.json({
+success:false,
+message:
+"Kullanıcı bulunamadı",
+});
+
+}
+
+user.coins =
+(user.coins || 0)
++ coins;
+
+await user.save();
+
+return res.json({
+
+success:true,
+
+coins:
+user.coins,
+
+});
+
+}
+
+catch(err){
+
+console.log(
+"ADD COINS ERROR",
+err,
+);
+
+return res.json({
+
+success:false,
+
+error:
+err.message,
+
+});
+
+}
+
 });
 
 module.exports = router;
