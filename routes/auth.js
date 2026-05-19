@@ -276,23 +276,28 @@ router.post("/verify-otp", async (req, res) => {
       });
     }
 
-    let user = await User.findOne({ phoneNumber });
-
+    let user = await User.findOne({ phoneNumber });   
+     
+    if (user && !user.registerType) {
+    user.registerType = "phone";
+    await user.save();
+   }
+     
     if (!user) {
       console.log("🔥 USER YOK → OLUŞTURULUYOR");
 
        user = await User.create({
-  phoneNumber,
+    phoneNumber,
 
-  userId: new mongoose.Types.ObjectId().toString(),
+     userId: new mongoose.Types.ObjectId().toString(),
 
-  registerType: "phone", // 🔥 EKLE
+     registerType: "phone", // 🔥 EKLE
 
-  coins: 10,
+      coins: 10,
 
-  isProfileCompleted: false,
-  });
-  }
+       isProfileCompleted: false,
+      });
+    }
 
     const token = jwt.sign(
       { id: user._id },
@@ -306,8 +311,14 @@ router.post("/verify-otp", async (req, res) => {
       user: {
         _id: user._id.toString(),
         phoneNumber: user.phoneNumber,
-        coins: user.coins,
+         coins: user.coins,
+          registerType:
+          user.registerType ?? "phone",
+
+           isProfileCompleted:
+          user.isProfileCompleted,
       },
+
       isNewUser: !user.isProfileCompleted,
     });
 
