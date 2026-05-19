@@ -45,14 +45,21 @@ router.post("/register", async (req, res) => {
       .randomBytes(32)
       .toString("hex");
 
-    await User.create({
-      userId: crypto.randomBytes(8).toString("hex"),
-      email,
-      password: hashed,
-      verificationToken: token,
-      isVerified: false,
-      coins: 10,
-    });
+      await User.create({
+  userId: crypto.randomBytes(8).toString("hex"),
+
+  email,
+  password: hashed,
+
+  registerType: "email", // 🔥 EKLE
+
+  verificationToken: token,
+  isVerified: false,
+
+  isProfileCompleted: true, // 🔥 mail kayıt direkt tamam
+
+  coins: 10,
+});
 
     // 🔥 GERÇEK VERIFY LINK
     const link =
@@ -274,13 +281,18 @@ router.post("/verify-otp", async (req, res) => {
     if (!user) {
       console.log("🔥 USER YOK → OLUŞTURULUYOR");
 
-      user = await User.create({
-        phoneNumber,
-       userId: new mongoose.Types.ObjectId().toString(),
-        coins: 10,
-        isProfileCompleted: false,
-      });
-    }
+       user = await User.create({
+  phoneNumber,
+
+  userId: new mongoose.Types.ObjectId().toString(),
+
+  registerType: "phone", // 🔥 EKLE
+
+  coins: 10,
+
+  isProfileCompleted: false,
+  });
+  }
 
     const token = jwt.sign(
       { id: user._id },
