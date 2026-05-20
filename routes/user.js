@@ -22,7 +22,8 @@ router.post("/upload-avatar", upload.single("image"), async (req, res) => {
   try {
     const userId = req.body.userId;
 
-    const imageUrl = `http://10.0.2.2:4000/uploads/${req.file.filename}`;
+     const imageUrl =
+     `https://mysticfal-backend-production.up.railway.app/uploads/${req.file.filename}`;
 
     await User.findByIdAndUpdate(userId, {
       profileImage: imageUrl,
