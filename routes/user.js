@@ -29,7 +29,18 @@ router.post("/upload-avatar", upload.single("image"), async (req, res) => {
       profileImage: imageUrl,
     });
 
-    res.json({ success: true, imageUrl });
+    const updatedUser =
+    await User.findById(
+    userId,
+     );
+
+    res.json({
+    success:true,
+    imageUrl,
+    user:updatedUser,
+    });
+
+
   } catch (err) {
     console.log(err);
     res.json({ success: false });
