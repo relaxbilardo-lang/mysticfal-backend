@@ -12,7 +12,7 @@ const androidpublisher = google.androidpublisher({
 
 const verifyPayment = async (token, productId) => {
   const res = await androidpublisher.purchases.products.get({
-    packageName: "com.mysticfal.app",
+    packageName: "com.mysticfal.mobile",
     productId: productId,
     token: token,
   })

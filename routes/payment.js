@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-//const { verifyPayment } = require("../services/google");
+const { verifyPayment } = require("../services/google");
 const User = require("../models/User");
 
 // 👑 GOOGLE PLAY ÖDEME VERIFY
-router.post("/google", async (req, res) => {
+router.post("/verify", async (req, res) => {
   try {
     const { token, productId, userId } = req.body;
 
@@ -17,20 +17,30 @@ router.post("/google", async (req, res) => {
 
     if (result.purchaseState === 0) {
       // ✅ USER BUL / OLUŞTUR
-      let user = await User.findOne({ userId });
+      let user = await User.findById(userId);
 
       if (!user) {
-        user = await User.create({ userId, coins: 0 });
-      }
+  return res.status(404).json({
+    success: false,
+    error: "User not found",
+  });
+}
 
       // 🔥 PRODUCT LOGIC
       let addedCoins = 0;
 
       // 💰 AYLIK COIN PAKETİ
-      if (productId === "coin_monthly") {
-        addedCoins = 100;
-        user.coin += addedCoins;
-      }
+       // 💰 50 COIN
+if (productId === "coin_50") {
+  addedCoins = 50;
+  user.coins += 50;
+}
+
+// 💰 100 COIN
+if (productId === "coin_100") {
+  addedCoins = 100;
+  user.coins += 100;
+}
 
       // 👑 VIP (İSTERSEN KALSIN)
       if (productId === "vip_monthly") {
@@ -46,7 +56,7 @@ router.post("/google", async (req, res) => {
 
       return res.json({
         success: true,
-        coins: user.coin,
+        coins: user.coins,
         addedCoins,
         isVIP: user.isVIP || false,
         vipExpiry: user.vipExpiry || null,
