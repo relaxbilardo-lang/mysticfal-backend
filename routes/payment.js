@@ -8,12 +8,14 @@ const User = require("../models/User");
 router.post("/verify", async (req, res) => {
   try {
     const { token, productId, userId } = req.body;
+    console.log("🔥 PAYMENT BODY:", req.body);
 
     if (!token || !productId || !userId) {
       return res.status(400).json({ error: "Missing data" });
     }
 
     const result = await verifyPayment(token, productId);
+    console.log("🔥 GOOGLE RESULT:", result);
 
     if (result.purchaseState === 0) {
       // ✅ USER BUL / OLUŞTUR
@@ -52,7 +54,11 @@ if (productId === "coin_100") {
         user.vipExpiry = expiry;
       }
 
+      console.log("🔥 COIN ADD:", addedCoins);
+      console.log("🔥 USER:", user._id);
+      
       await user.save();
+
 
       return res.json({
         success: true,
