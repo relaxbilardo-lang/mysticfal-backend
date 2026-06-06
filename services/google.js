@@ -1,11 +1,7 @@
 const { google } = require("googleapis");
 
-const serviceAccount = JSON.parse(
-  process.env.GOOGLE_SERVICE_ACCOUNT
-);
-
 const auth = new google.auth.GoogleAuth({
-  credentials: serviceAccount,
+  keyFile: "google-service-account.json",
   scopes: ["https://www.googleapis.com/auth/androidpublisher"],
 });
 
