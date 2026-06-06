@@ -1,13 +1,26 @@
 const { google } = require("googleapis");
 
-const serviceAccount = JSON.parse(
-  process.env.GOOGLE_SERVICE_ACCOUNT
-);
+let auth;
 
-const auth = new google.auth.GoogleAuth({
-  credentials: serviceAccount,
-  scopes: ["https://www.googleapis.com/auth/androidpublisher"],
-});
+if (process.env.GOOGLE_SERVICE_ACCOUNT) {
+  const serviceAccount = JSON.parse(
+    process.env.GOOGLE_SERVICE_ACCOUNT
+  );
+
+  auth = new google.auth.GoogleAuth({
+    credentials: serviceAccount,
+    scopes: [
+      "https://www.googleapis.com/auth/androidpublisher",
+    ],
+  });
+} else {
+  auth = new google.auth.GoogleAuth({
+    keyFile: "google-service-account.json",
+    scopes: [
+      "https://www.googleapis.com/auth/androidpublisher",
+    ],
+  });
+}
 
 const androidpublisher = google.androidpublisher({
   version: "v3",
@@ -15,11 +28,12 @@ const androidpublisher = google.androidpublisher({
 });
 
 const verifyPayment = async (token, productId) => {
-  const res = await androidpublisher.purchases.products.get({
-    packageName: "com.mysticfal.mobile",
-    productId,
-    token,
-  });
+  const res =
+    await androidpublisher.purchases.products.get({
+      packageName: "com.mysticfal.mobile",
+      productId,
+      token,
+    });
 
   return res.data;
 };
