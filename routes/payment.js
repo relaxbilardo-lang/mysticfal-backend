@@ -68,7 +68,7 @@ if (productId === "coin_100") {
         vipExpiry: user.vipExpiry || null,
       });
 
-    } else {
+     } else {
       return res.status(400).json({
         error: "Payment invalid",
       });
@@ -76,8 +76,9 @@ if (productId === "coin_100") {
 
   } catch (err) {
     console.error("VERIFY ERROR:", err);
-    res.status(500).json({
-      error: "Verification failed",
+
+    return res.status(500).json({
+      error: err.message,
     });
   }
 });
