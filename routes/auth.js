@@ -174,18 +174,11 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Kullanıcı yok" });
 
-    const match = await bcrypt.compare(password, user.password);
+     
 
-    const user = await User.findOne({ email });
-
-console.log("LOGIN EMAIL:", email);
-console.log("LOGIN USER:", user?.email);
-console.log("LOGIN HASH:", user?.password);
-
-if (!user)
-  return res.status(400).json({
-    message: "Kullanıcı yok",
-  });
+       console.log("LOGIN EMAIL:", email);
+      console.log("LOGIN USER:", user?.email);
+       console.log("LOGIN HASH:", user?.password);
 
 const match = await bcrypt.compare(
   password,
