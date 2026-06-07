@@ -366,7 +366,10 @@ router.post("/update-profile", async (req, res) => {
     console.log("🔍 Yakalanan Mevcut Şifre:", currentPassword);
     console.log("🔍 Yakalanan Yeni Şifre:", incomingNewPassword);
 
-    let user = await User.findById(userId) || await User.findOne({ userId: userId });
+    const user = await User.findById(userId);
+
+    console.log("FOUND USER:", user?._id);
+    console.log("FOUND EMAIL:", user?.email);
 
     if (!user) {
       return res.status(404).json({
@@ -374,7 +377,8 @@ router.post("/update-profile", async (req, res) => {
         message: "Kullanıcı bulunamadı",
       });
     }
-
+          console.log("USER ID USED:", user._id);
+          console.log("USER EMAIL USED:", user.email);
     let updateFields = {
       name: name,
       surname: surname,
@@ -433,7 +437,7 @@ router.post("/update-profile", async (req, res) => {
 
       updateFields.zodiac = autoZodiac;
     }
-
+    console.log("UPDATE FIELDS:", updateFields);
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       { $set: updateFields },
