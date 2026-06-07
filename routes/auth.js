@@ -170,6 +170,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("🔥 LOGIN ROUTE VERSION 999");
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Kullanıcı yok" });
@@ -184,6 +185,7 @@ const match = await bcrypt.compare(
   password,
   user.password,
 );
+console.log("AFTER SAVE TEST:", test);
 
 console.log("LOGIN MATCH:", match);
     if (!match) return res.status(400).json({ message: "Şifre yanlış" });
