@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs"); // 🔥 Şifreleme kütüphanesini ekledik
 
 const userSchema = new mongoose.Schema({
-  
   // Giriş ve Kimlik Bilgileri
   phoneNumber: { type: String, unique: true, sparse: true },
   userId: { type: String, required: true, unique: true },
@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   coins: { type: Number, default: 10 },
   totalEarnedCoins: { type: Number, default: 0 },
 
-  // 📸 PROFİL FOTO (🔥 BURASI ÖNEMLİ)
+  // 📸 PROFİL FOTO
   profileImage: { 
     type: String, 
     default: "" 
@@ -50,7 +50,21 @@ const userSchema = new mongoose.Schema({
   // 📊 LIMIT
   dailyUsage: { type: Number, default: 0 },
   lastUsageReset: { type: Date, default: null },
-
 }, { timestamps: true });
+
+// 🔥 ÖNEMLİ: Şifre Değiştiğinde Otomatik Şifreleme Mekanizması
+userSchema.pre("save", async function (next) {
+  // Eğer şifre alanında bir değişiklik yoksa şifrelemeyi atla
+  if (!this.isModified("password")) return next();
+
+  try {
+    // Şifreyi 10 salt turu ile güvenli hale getir
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = mongoose.model("User", userSchema);
