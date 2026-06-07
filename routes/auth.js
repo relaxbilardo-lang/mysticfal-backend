@@ -361,11 +361,8 @@ router.post("/update-profile", async (req, res) => {
     console.log("CURRENT PASSWORD RECEIVED:", currentPassword);
     console.log("NEW PASSWORD RECEIVED:", newPassword);
 
-    // 🔥 Hem MongoDB _id hem de özel string userId alanına göre esnek arama
-    let user = await User.findById(userId);
-    if (!user) {
-      user = await User.findOne({ userId: userId });
-    }
+    // Kullanıcıyı veritabanında ara
+    let user = await User.findById(userId) || await User.findOne({ userId: userId });
 
     if (!user) {
       return res.status(404).json({
@@ -374,9 +371,17 @@ router.post("/update-profile", async (req, res) => {
       });
     }
 
-    // 🔑 ŞİFRE DEĞİŞTİRME VE DOĞRULAMA ALANI
+    // Objeyi güncellemek için geçici bir nesne oluşturuyoruz (Şifreyi korumak için)
+    let updateFields = {
+      name: name,
+      surname: surname,
+      birthDate: birthDate,
+      birthTime: birthTime,
+      isProfileCompleted: true
+    };
+
+    // 🔑 ŞİFRE DEĞİŞTİRME KONTROLLERİ
     if (newPassword && newPassword.trim() !== "") {
-      // Güvenlik için kullanıcı mevcut şifresini girmek zorundadır
       if (!currentPassword) {
         return res.status(400).json({
           success: false,
@@ -384,7 +389,7 @@ router.post("/update-profile", async (req, res) => {
         });
       }
 
-      // Veritabanındaki şifrelenmiş mevcut şifre ile girilen mevcut şifreyi kıyasla
+      // Mevcut şifre kontrolü
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
         return res.status(400).json({
@@ -393,63 +398,47 @@ router.post("/update-profile", async (req, res) => {
         });
       }
 
-      // Mevcut şifre doğruysa yeni şifreyi 10 salt seviyesinde hashle ve kaydet
+      // Şifre doğruysa yeni şifreyi hashle ve güncelleme listesine ekle
       const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
-      user.password = hashedPassword;
-      console.log("PASSWORD UPDATED SUCCESS");
+      updateFields.password = hashedPassword;
+      console.log("🔥 YENİ ŞİFRE GÜVENLİCE HASHLEDİ VE EKLENDİ");
     }
 
-    // 👤 PROFİL BİLGİLERİNİ GÜNCELLEME
-    user.name = name;
-    user.surname = surname;
-    user.birthDate = birthDate;
-    user.birthTime = birthTime;
-
-    // 🌌 OTOMATİK BURÇ HESAPLAMA SİSTEMİ
+    // 🌌 BURÇ HESAPLAMA SİSTEMİ
     if (birthDate) {
       const month = new Date(birthDate).getMonth() + 1;
       const day = new Date(birthDate).getDate();
       let autoZodiac = "";
 
-      if ((month == 3 && day >= 21) || (month == 4 && day <= 19))
-        autoZodiac = "Koç";
-      else if ((month == 4 && day >= 20) || (month == 5 && day <= 20))
-        autoZodiac = "Boğa";
-      else if ((month == 5 && day >= 21) || (month == 6 && day <= 20))
-        autoZodiac = "İkizler";
-      else if ((month == 6 && day >= 21) || (month == 7 && day <= 22))
-        autoZodiac = "Yengeç";
-      else if ((month == 7 && day >= 23) || (month == 8 && day <= 22))
-        autoZodiac = "Aslan";
-      else if ((month == 8 && day >= 23) || (month == 9 && day <= 22))
-        autoZodiac = "Başak";
-      else if ((month == 9 && day >= 23) || (month == 10 && day <= 22))
-        autoZodiac = "Terazi";
-      else if ((month == 10 && day >= 23) || (month == 11 && day <= 21))
-        autoZodiac = "Akrep";
-      else if ((month == 11 && day >= 22) || (month == 12 && day <= 21))
-        autoZodiac = "Yay";
-      else if ((month == 12 && day >= 22) || (month == 1 && day <= 19))
-        autoZodiac = "Oğlak";
-      else if ((month == 1 && day >= 20) || (month == 2 && day <= 18))
-        autoZodiac = "Kova";
-      else
-        autoZodiac = "Balık";
+      if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) autoZodiac = "Koç";
+      else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) autoZodiac = "Boğa";
+      else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) autoZodiac = "İkizler";
+      else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) autoZodiac = "Yengeç";
+      else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) autoZodiac = "Aslan";
+      else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) autoZodiac = "Başak";
+      else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) autoZodiac = "Terazi";
+      else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) autoZodiac = "Akrep";
+      else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) autoZodiac = "Yay";
+      else if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) autoZodiac = "Oğlak";
+      else if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) autoZodiac = "Kova";
+      else autoZodiac = "Balık";
 
-      user.zodiac = autoZodiac;
-      console.log("BURÇ KAYDEDİLİYOR:", autoZodiac);
+      updateFields.zodiac = autoZodiac;
     }
 
-    user.isProfileCompleted = true;
-    console.log("FINAL USER:", user);
+    // 🔥 SAVE YERİNE DOĞRUDAN UPDATE KULLANIYORUZ (Böylece gizli şifreleme tetikleyicileri tamamen aşılır)
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { $set: updateFields },
+      { new: true } // Güncellenmiş yeni datayı geri döndür
+    );
 
-    // Değişiklikleri Veritabanına kaydet
-    await user.save();
+    console.log("✅ GÜNCELLEME TAMAMLANDI, VERİTABANI KORUNDU");
 
     return res.json({
       success: true,
-      message: "Profil ve şifre başarıyla güncellendi",
-      user,
+      message: "Profil başarıyla güncellendi",
+      user: updatedUser,
     });
 
   } catch (err) {
