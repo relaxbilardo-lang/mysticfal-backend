@@ -185,7 +185,7 @@ const match = await bcrypt.compare(
   password,
   user.password,
 );
-console.log("AFTER SAVE TEST:", test);
+ 
 
 console.log("LOGIN MATCH:", match);
     if (!match) return res.status(400).json({ message: "Şifre yanlış" });
@@ -368,31 +368,23 @@ router.post("/update-profile", async (req, res) => {
       });
     }
     if (
-  currentPassword &&
-  newPassword
+  newPassword &&
+  newPassword.trim() !== ""
 ) {
 
-     const match =
-     await bcrypt.compare(
-     currentPassword,
-    user.password,
-    );
-
-    if (!match) {
-    return res.status(400).json({
-    success: false,
-    message: "Mevcut şifre yanlış",
-    });
-  }
-
-  user.password =
+  const hashedPassword =
     await bcrypt.hash(
-      newPassword,
+      newPassword.trim(),
       10,
     );
-    console.log("PASSWORD UPDATED");
-}
 
+  user.password =
+    hashedPassword;
+
+  console.log(
+    "PASSWORD UPDATED"
+  );
+}
     user.name = name;
     user.surname = surname;
     user.birthDate = birthDate;
