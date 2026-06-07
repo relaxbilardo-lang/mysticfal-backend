@@ -335,14 +335,16 @@ router.post("/verify-otp", async (req, res) => {
 router.post("/update-profile", async (req, res) => {
   try {
 
-    const {
-      userId,
-      name,
-      surname,
-      birthDate,
-      birthTime,
-      zodiac,
-    } = req.body;
+  const {
+  userId,
+  name,
+  surname,
+  birthDate,
+  birthTime,
+  zodiac,
+  currentPassword,
+  newPassword,
+} = req.body;
 
     const user = await User.findById(userId);
 
@@ -352,6 +354,30 @@ router.post("/update-profile", async (req, res) => {
         message: "Kullanıcı bulunamadı",
       });
     }
+    if (
+  currentPassword &&
+  newPassword
+) {
+
+     const match =
+     await bcrypt.compare(
+     currentPassword,
+    user.password,
+    );
+
+    if (!match) {
+    return res.status(400).json({
+    success: false,
+    message: "Mevcut şifre yanlış",
+    });
+  }
+
+  user.password =
+    await bcrypt.hash(
+      newPassword,
+      10,
+    );
+}
 
     user.name = name;
     user.surname = surname;
