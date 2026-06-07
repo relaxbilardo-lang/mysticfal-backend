@@ -175,6 +175,24 @@ router.post("/login", async (req, res) => {
     if (!user) return res.status(400).json({ message: "Kullanıcı yok" });
 
     const match = await bcrypt.compare(password, user.password);
+
+    const user = await User.findOne({ email });
+
+console.log("LOGIN EMAIL:", email);
+console.log("LOGIN USER:", user?.email);
+console.log("LOGIN HASH:", user?.password);
+
+if (!user)
+  return res.status(400).json({
+    message: "Kullanıcı yok",
+  });
+
+const match = await bcrypt.compare(
+  password,
+  user.password,
+);
+
+console.log("LOGIN MATCH:", match);
     if (!match) return res.status(400).json({ message: "Şifre yanlış" });
 
     if (!user.isVerified) {
@@ -377,6 +395,7 @@ router.post("/update-profile", async (req, res) => {
       newPassword,
       10,
     );
+    console.log("PASSWORD UPDATED");
 }
 
     user.name = name;
@@ -442,7 +461,11 @@ user
 
 user.isProfileCompleted = true;
 
+    console.log("NEW PASSWORD RECEIVED:", newPassword);
+    console.log("CURRENT PASSWORD RECEIVED:", currentPassword);
+
     await user.save();
+
 
     return res.json({
       success: true,
