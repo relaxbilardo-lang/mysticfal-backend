@@ -347,6 +347,9 @@ router.post("/verify-otp", async (req, res) => {
 // ================= UPDATE PROFILE =================
 router.post("/update-profile", async (req, res) => {
   try {
+    // Gelen tüm veriyi consola basıp Flutter'dan ne geldiğini görelim
+    console.log("✈️ FLUTTER'DAN GELEN TÜM REQUEST BODY:", req.body);
+
     const {
       userId,
       name,
@@ -355,13 +358,14 @@ router.post("/update-profile", async (req, res) => {
       birthTime,
       zodiac,
       currentPassword,
-      newPassword,
     } = req.body;
 
-    console.log("CURRENT PASSWORD RECEIVED:", currentPassword);
-    console.log("NEW PASSWORD RECEIVED:", newPassword);
+    // 🔥 Flutter'ın göndermiş olabileceği alternatif şifre parametrelerini yakala
+    const incomingNewPassword = req.body.newPassword || req.body.password || req.body.new_password;
 
-    // Kullanıcıyı veritabanında ara
+    console.log("🔍 Yakalanan Mevcut Şifre:", currentPassword);
+    console.log("🔍 Yakalanan Yeni Şifre:", incomingNewPassword);
+
     let user = await User.findById(userId) || await User.findOne({ userId: userId });
 
     if (!user) {
@@ -371,7 +375,6 @@ router.post("/update-profile", async (req, res) => {
       });
     }
 
-    // Objeyi güncellemek için geçici bir nesne oluşturuyoruz (Şifreyi korumak için)
     let updateFields = {
       name: name,
       surname: surname,
@@ -380,8 +383,11 @@ router.post("/update-profile", async (req, res) => {
       isProfileCompleted: true
     };
 
-    // 🔑 ŞİFRE DEĞİŞTİRME KONTROLLERİ
-    if (newPassword && newPassword.trim() !== "") {
+    // 🔑 ŞİFRE DEĞİŞTİRME ALANI
+    if (incomingNewPassword && String(incomingNewPassword).trim() !== "") {
+      console.log("⚠️ Şifre değiştirme isteği algılandı. Doğrulama yapılıyor...");
+
+      // Eğer mevcut şifre yoksa veya veritabanındakiyle eşleşmiyorsa durdur
       if (!currentPassword) {
         return res.status(400).json({
           success: false,
@@ -389,7 +395,6 @@ router.post("/update-profile", async (req, res) => {
         });
       }
 
-      // Mevcut şifre kontrolü
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
         return res.status(400).json({
@@ -398,13 +403,15 @@ router.post("/update-profile", async (req, res) => {
         });
       }
 
-      // Şifre doğruysa yeni şifreyi hashle ve güncelleme listesine ekle
-      const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
+      // Her şey doğruysa şifreyi hashle ve listeye ekle
+      const hashedPassword = await bcrypt.hash(String(incomingNewPassword).trim(), 10);
       updateFields.password = hashedPassword;
-      console.log("🔥 YENİ ŞİFRE GÜVENLİCE HASHLEDİ VE EKLENDİ");
+      console.log("✅ Yeni şifre başarıyla hash'lendi ve update listesine eklendi.");
+    } else {
+      console.log("ℹ️ Yeni şifre alanı boş geldiği için şifre değiştirme adımı atlandı.");
     }
 
-    // 🌌 BURÇ HESAPLAMA SİSTEMİ
+    // Burç hesaplama mantığı
     if (birthDate) {
       const month = new Date(birthDate).getMonth() + 1;
       const day = new Date(birthDate).getDate();
@@ -426,14 +433,11 @@ router.post("/update-profile", async (req, res) => {
       updateFields.zodiac = autoZodiac;
     }
 
-    // 🔥 SAVE YERİNE DOĞRUDAN UPDATE KULLANIYORUZ (Böylece gizli şifreleme tetikleyicileri tamamen aşılır)
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       { $set: updateFields },
-      { new: true } // Güncellenmiş yeni datayı geri döndür
+      { new: true }
     );
-
-    console.log("✅ GÜNCELLEME TAMAMLANDI, VERİTABANI KORUNDU");
 
     return res.json({
       success: true,
@@ -442,7 +446,7 @@ router.post("/update-profile", async (req, res) => {
     });
 
   } catch (err) {
-    console.log("UPDATE PROFILE ERROR:", err);
+    console.log("❌ UPDATE PROFILE ERROR:", err);
     return res.status(500).json({
       success: false,
       error: err.message,
