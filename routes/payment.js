@@ -3,6 +3,7 @@ const router = express.Router();
 
 const { verifyPayment } = require("../services/google");
 const User = require("../models/User");
+const Purchase = require("../models/Purchase");
 
 // 👑 GOOGLE PLAY ÖDEME VERIFY
 router.post("/verify", async (req, res) => {
@@ -14,6 +15,18 @@ router.post("/verify", async (req, res) => {
       return res.status(400).json({ error: "Missing data" });
     }
 
+    // 🔒 TOKEN DAHA ÖNCE KULLANILDI MI?
+    const existingPurchase = await Purchase.findOne({
+     token,
+     });
+
+    if (existingPurchase) {
+     return res.status(400).json({
+    success: false,
+    error: "Purchase already processed",
+  });
+}
+    
     const result = await verifyPayment(token, productId);
     console.log("🔥 GOOGLE RESULT:", result);
 
