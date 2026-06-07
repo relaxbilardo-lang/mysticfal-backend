@@ -359,6 +359,9 @@ router.post("/update-profile", async (req, res) => {
   newPassword,
 } = req.body;
 
+console.log("CURRENT:", currentPassword);
+console.log("NEW:", newPassword);
+
     const user = await User.findById(userId);
 
     if (!user) {
