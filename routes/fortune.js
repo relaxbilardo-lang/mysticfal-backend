@@ -10,7 +10,7 @@ const Fortune = require("../models/Fortune");
 
  const generateAIReading = require("../services/ai");
 
- const VALID_TYPES = ["coffee", "tarot", "dream", "horoscope", "star"];
+ const VALID_TYPES = ["coffee", "tarot", "dream", "horoscope", "star", "love"];
 
   router.post("/", async (req, res) => {
   
@@ -91,6 +91,9 @@ if (type === "dream") cost = 2;
 if (type === "love") cost = 2;
 if (type === "horoscope") cost = 2;
 
+console.log("🔥 TYPE:", type);
+console.log("🔥 COST:", cost);
+
 
 
 // 🔥 TEST MODE - COIN SİSTEMİ TAM KAPALI
@@ -109,6 +112,9 @@ if (!isVIP) {
   user.coins -= cost;
 }
 
+
+console.log("🔥 TYPE:", type);
+console.log("🔥 COST:", cost);
 console.log("💰 COIN AFTER:", user.coins);
 
 
