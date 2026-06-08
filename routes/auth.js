@@ -344,6 +344,62 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
+  // ================= CHANGE PASSWORD =================
+router.post("/change-password", async (req, res) => {
+  try {
+    const {
+      userId,
+      currentPassword,
+      newPassword,
+    } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Kullanıcı bulunamadı",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Mevcut şifre yanlış",
+      });
+    }
+
+    user.password = await bcrypt.hash(
+      newPassword,
+      10
+    );
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Şifre güncellendi",
+    });
+
+  } catch (err) {
+
+    console.log(
+      "CHANGE PASSWORD ERROR:",
+      err
+    );
+
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
 // ================= UPDATE PROFILE =================
 router.post("/update-profile", async (req, res) => {
     console.log("🚨 UPDATE PROFILE ROUTE V555");
@@ -469,7 +525,12 @@ console.log(
   "🔥 SAVED HASH:",
   user.password
 );
+const testUser = await User.findById(user._id);
 
+console.log(
+  "🔥 DB HASH AFTER SAVE:",
+  testUser.password
+);
 const updatedUser = user;
 
     return res.json({
