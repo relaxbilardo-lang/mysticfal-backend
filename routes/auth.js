@@ -224,7 +224,7 @@ router.post("/forgot-password", async (req, res) => {
     user.resetTokenExpiry = Date.now() + 1000 * 60 * 15;
     await user.save();
 
-    const link = `http://192.168.0.101:4000/api/auth/reset/${token}`;
+    const link = `mysticfal://reset/${token}`;
 
     if (resend) {
       await resend.emails.send({
