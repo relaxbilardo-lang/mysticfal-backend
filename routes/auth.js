@@ -224,14 +224,15 @@ router.post("/forgot-password", async (req, res) => {
     user.resetTokenExpiry = Date.now() + 1000 * 60 * 15;
     await user.save();
 
-    const link = `mysticfal://reset/${token}`;
+    const link =
+    `https://mysticfal-backend-production.up.railway.app/api/auth/reset/${token}`;
 
    if (resend) {
   await resend.emails.send({
     from: "MysticFal <onboarding@mysticfal.com.tr>",
     to: email,
     subject: "Şifre Sıfırlama",
-    html: `
+   html: `
 <h2>Şifre Sıfırlama 🔐</h2>
 
 <p>Şifrenizi yenilemek için aşağıdaki butona tıklayın.</p>
@@ -248,10 +249,6 @@ display:inline-block;
 ">
 Şifreyi Yenile
 </a>
-
-<br><br>
-
-${link}
 `,
   });
 }
@@ -264,6 +261,47 @@ res.json({ message: "Mail gönderildi" });
 
 });
 
+    // ================= RESET PAGE =================
+router.get("/reset/:token", (req, res) => {
+
+  const token = req.params.token;
+
+  res.send(`
+  <html>
+  <head>
+    <meta charset="utf-8">
+
+    <script>
+      window.location.href =
+      "mysticfal://reset/${token}";
+    </script>
+
+  </head>
+
+  <body style="
+    background:#0B0B0F;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:sans-serif;
+    flex-direction:column;
+    ">
+
+    <h2>MysticFal 🔮</h2>
+
+    <p>Uygulama açılıyor...</p>
+
+    <a href="mysticfal://reset/${token}">
+      Uygulama açılmazsa buraya tıkla
+    </a>
+
+  </body>
+  </html>
+  `);
+
+});
 
 // ================= RESET =================
 router.post("/reset/:token", async (req, res) => {
