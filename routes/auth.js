@@ -438,11 +438,38 @@ router.post("/update-profile", async (req, res) => {
       updateFields.zodiac = autoZodiac;
     }
     console.log("UPDATE FIELDS:", updateFields);
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $set: updateFields },
-      { new: true }
-    );
+     user.name = name;
+user.surname = surname;
+user.birthDate = birthDate;
+user.birthTime = birthTime;
+user.isProfileCompleted = true;
+
+if (updateFields.zodiac) {
+  user.zodiac = updateFields.zodiac;
+}
+
+if (
+  incomingNewPassword &&
+  String(incomingNewPassword).trim() !== ""
+) {
+  user.password = await bcrypt.hash(
+    String(incomingNewPassword).trim(),
+    10
+  );
+
+  console.log(
+    "🔥 PASSWORD FIELD DIRECTLY UPDATED"
+  );
+}
+
+await user.save();
+
+console.log(
+  "🔥 SAVED HASH:",
+  user.password
+);
+
+const updatedUser = user;
 
     return res.json({
       success: true,
