@@ -226,24 +226,44 @@ router.post("/forgot-password", async (req, res) => {
 
     const link = `mysticfal://reset/${token}`;
 
-    if (resend) {
-      await resend.emails.send({
-       from: "MysticFal <onboarding@mysticfal.com.tr>",
-        to: email,
-        subject: "Şifre Sıfırlama",
-        html: `
-          <h2>Şifre sıfırlama</h2>
-          <a href="${link}">Şifreyi Yenile</a>
-        `,
-      });
-    }
+   if (resend) {
+  await resend.emails.send({
+    from: "MysticFal <onboarding@mysticfal.com.tr>",
+    to: email,
+    subject: "Şifre Sıfırlama",
+    html: `
+<h2>Şifre Sıfırlama 🔐</h2>
 
-    res.json({ message: "Mail gönderildi" });
+<p>Şifrenizi yenilemek için aşağıdaki butona tıklayın.</p>
 
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+<a href="${link}"
+style="
+background:#FFC107;
+color:black;
+padding:14px 24px;
+border-radius:10px;
+text-decoration:none;
+font-weight:bold;
+display:inline-block;
+">
+Şifreyi Yenile
+</a>
+
+<br><br>
+
+${link}
+`,
+  });
+}
+
+res.json({ message: "Mail gönderildi" });
+
+} catch (err) {
+  res.status(500).json({ error: err.message });
+}
+
 });
+
 
 // ================= RESET =================
 router.post("/reset/:token", async (req, res) => {
