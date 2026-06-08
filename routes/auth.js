@@ -346,6 +346,7 @@ router.post("/verify-otp", async (req, res) => {
 
 // ================= UPDATE PROFILE =================
 router.post("/update-profile", async (req, res) => {
+    console.log("🚨 UPDATE PROFILE ROUTE V555");
   try {
     // Gelen tüm veriyi consola basıp Flutter'dan ne geldiğini görelim
     console.log("✈️ FLUTTER'DAN GELEN TÜM REQUEST BODY:", req.body);
