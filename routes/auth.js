@@ -346,8 +346,7 @@ router.post("/verify-otp", async (req, res) => {
 
   // ================= CHANGE PASSWORD =================
 router.post("/change-password", async (req, res) => {
-  console.log("🚨 CHANGE PASSWORD ROUTE HIT");
-  console.log("🚨 BODY:", req.body);
+ 
   try {
     const {
       userId,
