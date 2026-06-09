@@ -267,40 +267,50 @@ res.json({ message: "Mail gönderildi" });
   const token = req.params.token;
 
   res.send(`
-  <html>
-    <body style="
-      background:#0F0F1E;
-      color:white;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-      font-family:sans-serif;
-      flex-direction:column;
+<html>
+
+<head>
+<script>
+setTimeout(() => {
+  window.location.href = "mysticfal://reset/${token}";
+}, 500);
+</script>
+</head>
+
+<body style="
+  background:#0F0F1E;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  font-family:sans-serif;
+  flex-direction:column;
+">
+
+  <h1>🔐 Şifre Sıfırlama</h1>
+
+  <p>
+    Şifrenizi yenilemek için uygulamaya dönün.
+  </p>
+
+  <a href="mysticfal://reset/${token}"
+    style="
+      margin-top:20px;
+      background:#FFC107;
+      color:black;
+      padding:14px 24px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:bold;
     ">
+    MysticFal'a Dön
+  </a>
 
-      <h1>🔐 Şifre Sıfırlama</h1>
+</body>
 
-      <p>
-        Şifrenizi yenilemek için uygulamaya dönün.
-      </p>
-
-      <a href="mysticfal://reset/${token}"
-        style="
-          margin-top:20px;
-          background:#FFC107;
-          color:black;
-          padding:14px 24px;
-          border-radius:12px;
-          text-decoration:none;
-          font-weight:bold;
-        ">
-        MysticFal'a Dön
-      </a>
-
-    </body>
-  </html>
-  `);
+</html>
+`);
 
 });
 
