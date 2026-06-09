@@ -262,42 +262,43 @@ res.json({ message: "Mail gönderildi" });
 });
 
     // ================= RESET PAGE =================
-router.get("/reset/:token", (req, res) => {
+ router.get("/reset/:token", (req, res) => {
 
   const token = req.params.token;
 
   res.send(`
   <html>
-  <head>
-    <meta charset="utf-8">
-
-    <script>
-      window.location.href =
-      "mysticfal://reset/${token}";
-    </script>
-
-  </head>
-
-  <body style="
-    background:#0B0B0F;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    font-family:sans-serif;
-    flex-direction:column;
+    <body style="
+      background:#0F0F1E;
+      color:white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      font-family:sans-serif;
+      flex-direction:column;
     ">
 
-    <h2>MysticFal 🔮</h2>
+      <h1>🔐 Şifre Sıfırlama</h1>
 
-    <p>Uygulama açılıyor...</p>
+      <p>
+        Şifrenizi yenilemek için uygulamaya dönün.
+      </p>
 
-    <a href="mysticfal://reset/${token}">
-      Uygulama açılmazsa buraya tıkla
-    </a>
+      <a href="mysticfal://reset/${token}"
+        style="
+          margin-top:20px;
+          background:#FFC107;
+          color:black;
+          padding:14px 24px;
+          border-radius:12px;
+          text-decoration:none;
+          font-weight:bold;
+        ">
+        MysticFal'a Dön
+      </a>
 
-  </body>
+    </body>
   </html>
   `);
 
