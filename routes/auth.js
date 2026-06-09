@@ -23,15 +23,21 @@ if (process.env.RESEND_API_KEY) {
 // ================= REGISTER =================
 router.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    console.log("REGISTER EMAIL:", email);
-    if (!email || !password) {
+     const { email, password } = req.body;
+
+     const emailNormalized = email.trim().toLowerCase();
+
+console.log("REGISTER EMAIL:", emailNormalized);
+
+if (!emailNormalized || !password) {
       return res.status(400).json({
         message: "Eksik alan",
       });
     }
 
-    const existing = await User.findOne({ email });
+   const existing = await User.findOne({
+    email: emailNormalized,
+   });
     console.log("EXISTING USER:", existing);
     if (existing) {
       return res.status(400).json({
@@ -48,7 +54,7 @@ router.post("/register", async (req, res) => {
       await User.create({
   userId: crypto.randomBytes(8).toString("hex"),
 
-  email,
+  email: emailNormalized,
   password: hashed,
 
   registerType: "email", // 🔥 EKLE
